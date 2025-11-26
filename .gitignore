@@ -1,0 +1,35 @@
+# Python venvs and caches
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Packaging / build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Local tooling
+.python-version
+.env
+.env.*
+.DS_Store
+.vscode/
+.idea/
+
+# uv specific
+.uv/
+
+# Coverage / test outputs
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.pyright/
+
+# Logs
+logs/
+*.log

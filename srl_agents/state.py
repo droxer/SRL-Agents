@@ -1,0 +1,28 @@
+"""Typed state and structured outputs for the SRL LangGraph."""
+from __future__ import annotations
+
+from typing import Optional, TypedDict
+
+from pydantic import BaseModel, Field
+
+
+class ReflectionOutput(BaseModel):
+    topic: str = Field(description="Domain where the experience applies, e.g., SQL, Python, General")
+    insight: str = Field(description="Specific rule or lesson extracted")
+    reasoning: str = Field(description="Why this rule is needed")
+    should_store: bool = Field(description="Whether it's valuable to store in memory")
+
+
+class CriticOutput(BaseModel):
+    decision: str = Field(description="Decision result: APPROVE, REVISE, or DISCARD")
+    feedback: str = Field(description="If not approved, provide specific revision suggestions; if approved, leave empty")
+
+
+class AgentState(TypedDict, total=False):
+    query: str
+    retrieved_memories: str
+    response: str
+    proposed_reflection: ReflectionOutput
+    review_decision: str
+    critic_feedback: str
+    retry_count: int
