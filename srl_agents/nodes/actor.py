@@ -22,8 +22,10 @@ def actor_node(llm: ChatOpenAI):
     chain = _PROMPT | llm
 
     def actor_node(state: AgentState):
-        result = chain.invoke({"memories": state["retrieved_memories"], "query": state["query"]})
+        query = state["query"]
         console.rule("[bold cyan]2. Actor")
+        console.print(f"[bold]Learner query:[/bold] {query}")
+        result = chain.invoke({"memories": state["retrieved_memories"], "query": query})
         console.print(result.content)
         return {"response": result.content}
 

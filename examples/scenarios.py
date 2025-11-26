@@ -1,12 +1,13 @@
 """Sample scenarios demonstrating the forethought-reflection loop."""
 from __future__ import annotations
 
-from .logging import console
+from rich.console import Console
 
 
 def run_demo(app):  # type: ignore[override]
-    console.rule("🚀 Scenario 1 · First Encounter")
-    app.invoke({"query": "我想清空当前目录下的所有 git 修改，用什么命令？", "retry_count": 0})
+    console = Console()
+    console.print("[bold cyan]🚀 Scenario 1 · First Encounter[/bold cyan]")
+    app.invoke({"query": "What command should I use to clear all git modifications in the current directory?", "retry_count": 0})
 
-    console.rule("🚀 Scenario 2 · Similar Problem")
-    app.invoke({"query": "只要是没提交的文件我都想删了，怎么弄？", "retry_count": 0})
+    console.print("[bold cyan]🚀 Scenario 2 · Similar Problem[/bold cyan]")
+    app.invoke({"query": "I want to delete all files that haven't been committed, how do I do that?", "retry_count": 0})
