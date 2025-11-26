@@ -22,6 +22,7 @@ dist/
 
 # uv specific
 .uv/
+.chroma/
 
 # Coverage / test outputs
 .coverage

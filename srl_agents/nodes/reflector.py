@@ -8,7 +8,7 @@ from ..logging import console
 from ..state import AgentState, ReflectionOutput
 
 
-def reflector_node(llm: ChatOpenAI):
+def build_reflector_node(llm: ChatOpenAI):
     def reflector_node(state: AgentState):
         query = state["query"]
         response = state["response"]

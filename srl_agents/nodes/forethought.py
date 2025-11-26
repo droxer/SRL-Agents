@@ -6,7 +6,7 @@ from ..memory import MemoryStore
 from ..state import AgentState
 
 
-def forethought_node(store: MemoryStore):
+def build_forethought_node(store: MemoryStore):
     def forethought_node(state: AgentState):
         query = state["query"]
         memories = store.search(query)

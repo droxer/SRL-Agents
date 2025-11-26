@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from langgraph.graph import END, START, StateGraph
 
-from .config import get_llm
+from .config import get_embeddings, get_llm, get_vector_client
 from .logging import console
 from .memory import MemoryStore
-from .nodes.actor import actor_node
-from .nodes.critic import critic_node
-from .nodes.forethought import forethought_node
-from .nodes.reflector import reflector_node
+from .nodes.actor import build_actor_node
+from .nodes.critic import build_critic_node
+from .nodes.forethought import build_forethought_node
+from .nodes.reflector import build_reflector_node
 from .nodes.store import build_store_node
 from .state import AgentState
 
@@ -33,13 +33,13 @@ def _router(state: AgentState):
 def create_app(memory_store: MemoryStore | None = None):
     """Compile and return the LangGraph application."""
     llm = get_llm()
-    store = memory_store or MemoryStore()
+    store = memory_store or MemoryStore(embedder=get_embeddings(), client=get_vector_client())
 
     workflow = StateGraph(AgentState)
-    workflow.add_node("forethought", forethought_node(store))
-    workflow.add_node("actor", actor_node(llm))
-    workflow.add_node("reflector", reflector_node(llm))
-    workflow.add_node("critic", critic_node(llm))
+    workflow.add_node("forethought", build_forethought_node(store))
+    workflow.add_node("actor", build_actor_node(llm))
+    workflow.add_node("reflector", build_reflector_node(llm))
+    workflow.add_node("critic", build_critic_node(llm))
     workflow.add_node("store", build_store_node(store))
 
     workflow.add_edge(START, "forethought")

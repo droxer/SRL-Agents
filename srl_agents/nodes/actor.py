@@ -18,7 +18,7 @@ _PROMPT = ChatPromptTemplate.from_messages(
 )
 
 
-def actor_node(llm: ChatOpenAI):
+def build_actor_node(llm: ChatOpenAI):
     chain = _PROMPT | llm
 
     def actor_node(state: AgentState):

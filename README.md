@@ -6,7 +6,7 @@ SRL-Agents is a LangGraph playground for building Self-Regulated Learning (SRL) 
 
 - `srl_agents/config.py` – loads `.env` variables and returns a shared OpenAI client.
 - `srl_agents/state.py` – typed state plus Reflection/Critic Pydantic models.
-- `srl_agents/memory.py` – pluggable memory adapter (in-memory mock by default).
+- `srl_agents/memory.py` – Chroma-backed semantic memory adapter fed by OpenAI embeddings.
 - `srl_agents/nodes/` – one module per SRL phase; easy to extend or swap.
 - `srl_agents/logging.py` – shared Rich console instance for pretty output.
 - `srl_agents/graph.py` – builds the LangGraph via `create_app()`.
@@ -18,7 +18,7 @@ SRL-Agents is a LangGraph playground for building Self-Regulated Learning (SRL) 
 
 1. Python 3.11–3.13 (LangChain’s Pydantic v1 shim is not yet compatible with 3.14+). We recommend 3.13, which matches `.python-version`.
 2. `uv` (recommended) or `pip` for dependency management.
-3. `OPENAI_API_KEY` exported or stored in `.env`. Optional overrides: `OPENAI_MODEL` (default `gpt-4o`), `OPENAI_TEMPERATURE` (default `0`).
+3. `OPENAI_API_KEY` exported or stored in `.env`. Optional overrides: `OPENAI_MODEL` (default `gpt-4o`), `OPENAI_TEMPERATURE` (default `0`), `OPENAI_EMBED_MODEL` (default `text-embedding-3-small`), `CHROMA_PERSIST_DIR` (default `.chroma`).
 
 ## Installation
 
@@ -56,7 +56,7 @@ app.invoke({"query": "我该如何制定复习计划？", "retry_count": 0})
 ## Extending SRL Behaviors
 
 - Add new node variants (diagnostics, reflection rubrics) in `srl_agents/nodes/`.
-- Replace `MemoryStore` with pgvector or other embeddings DB for longitudinal tracking.
+- Point `CHROMA_PERSIST_DIR` to a shared volume or swap `MemoryStore` with your own pgvector/ANN implementation via `create_app(memory_store=...)` if you need external persistence.
 - Expand `AgentState` with learner metadata (competencies, goals) to personalize prompts.
 - Capture evaluation data in `scenarios.py` to benchmark interventions.
 

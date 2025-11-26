@@ -25,7 +25,7 @@ _REVIEW_PROMPT = ChatPromptTemplate.from_messages(
 )
 
 
-def critic_node(llm: ChatOpenAI):
+def build_critic_node(llm: ChatOpenAI):
     def critic_node(state: AgentState):
         reflection = state["proposed_reflection"]
 
