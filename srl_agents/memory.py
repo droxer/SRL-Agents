@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import List
 
+from .logging import console
 from .state import ReflectionOutput
 
 
@@ -26,7 +27,9 @@ class MemoryStore:
 
     def add(self, reflection: ReflectionOutput) -> None:
         """Persist a new reflection in the simulated store."""
-        print(f"\n[Database] 💾 Persisting: [{reflection.topic}] {reflection.insight}")
+        console.print(
+            f"[green]\\n[Database] 💾 Persisting: [{reflection.topic}] {reflection.insight}[/green]"
+        )
         self.memories.append(
             {
                 "topic": reflection.topic,

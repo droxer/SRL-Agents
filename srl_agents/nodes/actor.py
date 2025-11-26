@@ -4,6 +4,7 @@ from __future__ import annotations
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
+from ..logging import console
 from ..state import AgentState
 
 _PROMPT = ChatPromptTemplate.from_messages(
@@ -17,12 +18,13 @@ _PROMPT = ChatPromptTemplate.from_messages(
 )
 
 
-def build_actor_node(llm: ChatOpenAI):
+def actor_node(llm: ChatOpenAI):
     chain = _PROMPT | llm
 
     def actor_node(state: AgentState):
         result = chain.invoke({"memories": state["retrieved_memories"], "query": state["query"]})
-        print(f"\n--- 2. Actor ---\nResponse: {result.content[:100]}...")
+        console.rule("[bold cyan]2. Actor")
+        console.print(result.content)
         return {"response": result.content}
 
     return actor_node

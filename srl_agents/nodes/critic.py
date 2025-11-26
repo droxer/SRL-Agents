@@ -4,6 +4,7 @@ from __future__ import annotations
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
+from ..logging import console
 from ..state import AgentState, CriticOutput
 
 _REVIEW_PROMPT = ChatPromptTemplate.from_messages(
@@ -24,7 +25,7 @@ _REVIEW_PROMPT = ChatPromptTemplate.from_messages(
 )
 
 
-def build_critic_node(llm: ChatOpenAI):
+def critic_node(llm: ChatOpenAI):
     def critic_node(state: AgentState):
         reflection = state["proposed_reflection"]
 
@@ -38,9 +39,10 @@ def build_critic_node(llm: ChatOpenAI):
             )
         )
 
-        print(f"\n--- 4. Critic ---\nReview decision: {result.decision}")
+        console.rule("[bold cyan]4. Critic")
+        console.print(f"[yellow]Decision:[/yellow] {result.decision}")
         if result.decision == "REVISE":
-            print(f"Revision feedback: {result.feedback}")
+            console.print(f"[yellow]Feedback:[/yellow] {result.feedback}")
 
         update = {"review_decision": result.decision}
         if result.decision == "REVISE":

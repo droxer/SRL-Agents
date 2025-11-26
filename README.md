@@ -8,8 +8,9 @@ SRL-Agents is a LangGraph playground for building Self-Regulated Learning (SRL) 
 - `srl_agents/state.py` – typed state plus Reflection/Critic Pydantic models.
 - `srl_agents/memory.py` – pluggable memory adapter (in-memory mock by default).
 - `srl_agents/nodes/` – one module per SRL phase; easy to extend or swap.
+- `srl_agents/logging.py` – shared Rich console instance for pretty output.
 - `srl_agents/graph.py` – builds the LangGraph via `create_app()`.
-- `srl_agents/scenarios.py` – canned demos mimicking SRL tutoring sessions.
+- `examples/scenarios.py` – canned demos mimicking SRL tutoring sessions.
 - `main.py` – CLI entry point that plays demos or accepts a custom `--query`.
 - `AGENTS.md` – contributor workflow and coding guidelines.
 
@@ -37,6 +38,8 @@ make lint   # Ruff static analysis
 make type   # Pyright type checking
 make test   # Pytest (add tests under tests/)
 ```
+
+All CLI output uses [`rich`](https://github.com/Textualize/rich) for readable, colorized traces of each SRL phase. Demo scripts now live under `examples/`.
 
 Embed the workflow programmatically:
 

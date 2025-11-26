@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse
 
 from srl_agents import create_app
-from srl_agents.scenarios import run_demo
+from examples.scenarios import run_demo
 
 
 def main() -> None:

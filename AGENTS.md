@@ -1,9 +1,9 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `srl_agents/` is the package containing configuration (`config.py`), typed state models (`state.py`), the in-memory memory adapter (`memory.py`), node implementations (`nodes/`), the LangGraph builder (`graph.py`), and demo scripts (`scenarios.py`).
+- `srl_agents/` is the package containing configuration (`config.py`), typed state models (`state.py`), the in-memory memory adapter (`memory.py`), node implementations (`nodes/`), the LangGraph builder (`graph.py`), and logging utilities.
+- `examples/` houses runnable demos such as `examples/scenarios.py`; keep additional showcase scripts here instead of inside the package.
 - `main.py` is the CLI entry point; it wires command-line arguments into the compiled graph.
-- `sql/` houses any initialization scripts for backing stores; keep additional assets in sibling folders when needed.
 - Tests live beside the code they exercise (e.g., `tests/test_graph.py`); create the directory if you add automated coverage.
 
 ## Build, Test, and Development Commands
