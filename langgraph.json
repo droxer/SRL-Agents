@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+    "-e ."
+  ],
+  "graphs": {
+    "srl-agents": "srl_agents.graph:create_app"
+  }
+}

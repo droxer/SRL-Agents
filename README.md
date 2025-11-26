@@ -37,9 +37,13 @@ make run    # wrapper around `uv run python3 main.py`
 make lint   # Ruff static analysis
 make type   # Pyright type checking
 make test   # Pytest (add tests under tests/)
+# LangGraph CLI helper (install with `uv add langgraph-cli` if missing)
+make lg-dev   # Run langgraph dev (live reload playground)
 ```
 
 All CLI output uses [`rich`](https://github.com/Textualize/rich) for readable, colorized traces of each SRL phase. Demo scripts now live under `examples/`.
+
+LangGraph CLI reads `langgraph.json`, which pins dependencies via `\"-e .\"` and maps the `srl-agents` graph id to `srl_agents.graph:create_app`.
 
 Embed the workflow programmatically:
 

@@ -33,3 +33,6 @@ htmlcov/
 # Logs
 logs/
 *.log
+
+# LangGraph
+.langgraph_api/

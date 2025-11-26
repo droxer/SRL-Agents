@@ -1,4 +1,4 @@
-.PHONY: run lint type test
+.PHONY: run lint type test lg-dev
 
 run:
 	uv run python3 main.py
@@ -11,3 +11,6 @@ type:
 
 test:
 	uv run pytest
+
+lg-dev:
+	uv run langgraph dev

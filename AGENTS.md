@@ -11,6 +11,8 @@
 - `make lint` – runs Ruff against the repository; fix diagnostics before committing.
 - `make type` – runs Pyright for static type checking; prefer annotating new functions.
 - `make test` – runs Pytest; ensure meaningful coverage for new behaviors.
+- `make lg-dev` – wrapper around the LangGraph CLI dev server. Install it first (`uv add langgraph-cli`) so the command resolves.
+  - The CLI reads `langgraph.json`, which installs dependencies via `"-e ."` and maps the `srl-agents` graph id directly to `srl_agents.graph:create_app`.
 
 ## Coding Style & Naming Conventions
 - Python files use Black-style 4-space indentation; prefer descriptive snake_case for variables/functions and PascalCase for classes.
