@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import argparse
 
-from srl_agents import create_app
 from examples.scenarios import run_demo
+from srl_agents import create_app
 
 
 def main() -> None:

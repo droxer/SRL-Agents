@@ -36,6 +36,7 @@ def build_reflector_node(llm: ChatOpenAI):
 
         structured_llm = llm.with_structured_output(ReflectionOutput)
         reflection = structured_llm.invoke(prompt.format())
+        reflection = reflection.model_copy(update={"source_query": query})
         console.print(f"[magenta]Proposed rule:[/magenta] {reflection.insight}")
         return {"proposed_reflection": reflection, "retry_count": retry_count + 1}
 

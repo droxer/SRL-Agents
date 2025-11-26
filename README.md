@@ -32,6 +32,9 @@ cp .env.example .env  # fill in OpenAI creds
 ```bash
 python main.py                   # run demo scenarios
 python main.py --query "Plan my SRL study session"
+python memory_cli.py list --limit 10    # inspect stored reflections
+python memory_cli.py delete <memory-id> # remove a single reflection
+python memory_cli.py reset              # wipe the memory store
 
 make run    # wrapper around `uv run python3 main.py`
 make lint   # Ruff static analysis
@@ -39,6 +42,9 @@ make type   # Pyright type checking
 make test   # Pytest (add tests under tests/)
 # LangGraph CLI helper (install with `uv add langgraph-cli` if missing)
 make lg-dev   # Run langgraph dev (live reload playground)
+make memory-list MEMORY_LIMIT=25  # list stored reflections via make
+make memory-delete ID=<memory-id> # delete a single reflection
+make memory-reset                 # wipe the memory store
 ```
 
 All CLI output uses [`rich`](https://github.com/Textualize/rich) for readable, colorized traces of each SRL phase. Demo scripts now live under `examples/`.

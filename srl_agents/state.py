@@ -11,6 +11,9 @@ class ReflectionOutput(BaseModel):
     insight: str = Field(description="Specific rule or lesson extracted")
     reasoning: str = Field(description="Why this rule is needed")
     should_store: bool = Field(description="Whether it's valuable to store in memory")
+    source_query: str | None = Field(
+        default=None, description="Original learner question that produced this reflection"
+    )
 
 
 class CriticOutput(BaseModel):

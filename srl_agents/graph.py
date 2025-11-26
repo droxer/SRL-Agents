@@ -11,6 +11,7 @@ from .nodes.critic import build_critic_node
 from .nodes.forethought import build_forethought_node
 from .nodes.reflector import build_reflector_node
 from .nodes.store import build_store_node
+from .query_refiner import LLMQueryRefiner
 from .state import AgentState
 
 
@@ -33,7 +34,11 @@ def _router(state: AgentState):
 def create_app(memory_store: MemoryStore | None = None):
     """Compile and return the LangGraph application."""
     llm = get_llm()
-    store = memory_store or MemoryStore(embedder=get_embeddings(), client=get_vector_client())
+    store = memory_store or MemoryStore(
+        embedder=get_embeddings(),
+        client=get_vector_client(),
+        query_refiner=LLMQueryRefiner(llm),
+    )
 
     workflow = StateGraph(AgentState)
     workflow.add_node("forethought", build_forethought_node(store))
