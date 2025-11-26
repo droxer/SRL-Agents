@@ -1,7 +1,7 @@
 """Typed state and structured outputs for the SRL LangGraph."""
 from __future__ import annotations
 
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 from pydantic import BaseModel, Field
 

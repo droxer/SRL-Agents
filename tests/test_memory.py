@@ -205,3 +205,203 @@ def test_add_uses_same_refiner_path_as_search():
     store.add(reflection)
 
     assert embedder.last_query.endswith("normalized")
+
+
+def test_add_memory_stores_reflection_correctly():
+    """Test that adding a memory stores all reflection components correctly."""
+    embedder = DummyEmbedder()
+    collection = FakeCollection()
+    store = MemoryStore(
+        embedder=embedder,
+        client=FakeClient(collection),
+    )
+    reflection = ReflectionOutput(
+        topic="Python",
+        insight="Use list comprehensions for simple transformations",
+        reasoning="More readable and often faster than loops",
+        should_store=True,
+        source_query="How to transform lists in Python?",
+    )
+
+    store.add(reflection)
+
+    # Verify memory was added to collection
+    assert len(collection.items) == 1
+    stored_item = collection.items[0]
+    assert stored_item["metadata"]["topic"] == "Python"
+    assert stored_item["metadata"]["insight"] == "Use list comprehensions for simple transformations"
+    assert stored_item["metadata"]["reasoning"] == "More readable and often faster than loops"
+    assert stored_item["metadata"]["source_query"] == "How to transform lists in Python?"
+    assert "Python" in stored_item["document"]
+    assert "list comprehensions" in stored_item["document"]
+
+    # Verify it appears in list_memories
+    memories = store.list_memories()
+    assert len(memories) == 1
+    assert memories[0]["topic"] == "Python"
+    assert memories[0]["insight"] == "Use list comprehensions for simple transformations"
+    assert memories[0]["reasoning"] == "More readable and often faster than loops"
+
+
+def test_add_memory_with_empty_reasoning():
+    """Test adding memory when reasoning is empty string."""
+    embedder = DummyEmbedder()
+    collection = FakeCollection()
+    store = MemoryStore(
+        embedder=embedder,
+        client=FakeClient(collection),
+    )
+    reflection = ReflectionOutput(
+        topic="General",
+        insight="Take regular breaks",
+        reasoning="",
+        should_store=True,
+        source_query="How to maintain productivity?",
+    )
+
+    store.add(reflection)
+
+    memories = store.list_memories()
+    assert len(memories) == 1
+    assert memories[0]["topic"] == "General"
+    assert memories[0]["insight"] == "Take regular breaks"
+    assert memories[0]["reasoning"] == ""
+
+
+def test_search_finds_relevant_added_memory():
+    """Test that searching finds memories that were previously added."""
+    embedder = DummyEmbedder()
+    collection = FakeCollection()
+    store = MemoryStore(
+        embedder=embedder,
+        client=FakeClient(collection),
+        top_k=5,
+        min_similarity=0.3,
+    )
+
+    # Add multiple memories
+    reflection1 = ReflectionOutput(
+        topic="SQL",
+        insight="Use indexes for large table joins",
+        reasoning="Speeds up query execution",
+        should_store=True,
+        source_query="How to optimize SQL queries?",
+    )
+    reflection2 = ReflectionOutput(
+        topic="Python",
+        insight="Use generators for large datasets",
+        reasoning="Saves memory",
+        should_store=True,
+        source_query="How to process large files?",
+    )
+    reflection3 = ReflectionOutput(
+        topic="General",
+        insight="Review code before committing",
+        reasoning="Catches bugs early",
+        should_store=True,
+        source_query="What's a good workflow?",
+    )
+
+    store.add(reflection1)
+    store.add(reflection2)
+    store.add(reflection3)
+
+    # Verify all memories are stored
+    assert len(collection.items) == 3
+
+    # Mock search results to return relevant memory
+    collection.query_result = {
+        "metadatas": [
+            [
+                {"topic": "SQL", "insight": "Use indexes for large table joins"},
+                {"topic": "Python", "insight": "Use generators for large datasets"},
+            ]
+        ],
+        "documents": [
+            [
+                "SQL. Use indexes for large table joins. Speeds up query execution. How to optimize SQL queries?",
+                "Python. Use generators for large datasets. Saves memory. How to process large files?",
+            ]
+        ],
+        "distances": [[0.2, 0.4]],  # Low distance = high similarity
+    }
+
+    result = store.search("optimize database queries")
+
+    # Should find SQL-related memory with high similarity
+    assert "SQL" in result
+    assert "Use indexes for large table joins" in result
+    assert "0.80" in result  # similarity = 1 - 0.2 = 0.8
+
+
+def test_search_returns_multiple_relevant_memories():
+    """Test that search returns multiple memories when they meet similarity threshold."""
+    embedder = DummyEmbedder()
+    collection = FakeCollection()
+    store = MemoryStore(
+        embedder=embedder,
+        client=FakeClient(collection),
+        top_k=5,
+        min_similarity=0.5,
+    )
+
+    # Mock search results with multiple high-similarity matches
+    collection.query_result = {
+        "metadatas": [
+            [
+                {"topic": "SQL", "insight": "Use indexes for joins"},
+                {"topic": "SQL", "insight": "Analyze query plans"},
+                {"topic": "General", "insight": "Test thoroughly"},
+            ]
+        ],
+        "documents": [["SQL doc 1", "SQL doc 2", "General doc"]],
+        "distances": [[0.1, 0.2, 0.7]],  # First two are relevant
+    }
+
+    result = store.search("SQL optimization")
+
+    # Should return both SQL memories (similarity 0.9 and 0.8)
+    assert result.count("- [SQL]") == 2
+    assert "Use indexes for joins" in result
+    assert "Analyze query plans" in result
+    # General memory should not appear (similarity 0.3 < 0.5)
+    assert "Test thoroughly" not in result
+
+
+def test_add_and_search_integration():
+    """End-to-end test: add memory, then search for it."""
+    embedder = DummyEmbedder()
+    collection = FakeCollection()
+    store = MemoryStore(
+        embedder=embedder,
+        client=FakeClient(collection),
+        top_k=3,
+        min_similarity=0.4,
+    )
+
+    # Add a memory
+    reflection = ReflectionOutput(
+        topic="Testing",
+        insight="Write tests before fixing bugs",
+        reasoning="Ensures the fix works",
+        should_store=True,
+        source_query="How to debug effectively?",
+    )
+    store.add(reflection)
+
+    # Verify it was stored
+    assert len(collection.items) == 1
+
+    # Mock search to return the stored memory
+    collection.query_result = {
+        "metadatas": [[{"topic": "Testing", "insight": "Write tests before fixing bugs"}]],
+        "documents": [["Testing. Write tests before fixing bugs. Ensures the fix works. How to debug effectively?"]],
+        "distances": [[0.15]],  # High similarity
+    }
+
+    result = store.search("debugging workflow")
+
+    # Should find the relevant memory
+    assert "Testing" in result
+    assert "Write tests before fixing bugs" in result
+    assert "0.85" in result  # similarity = 1 - 0.15 = 0.85
