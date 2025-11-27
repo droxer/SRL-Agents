@@ -1,6 +1,6 @@
 # SRL-Agents
 
-SRL-Agents is a LangGraph playground for building Self-Regulated Learning (SRL) agents. Each run walks through SRL's core loop—Forethought, Performance, and Self-Reflection—via specialized graph nodes (Forethought → Actor → Reflector → Critic → Store). Use it to prototype metacognitive coaching strategies, remediation flows, or study companions that learn from prior mistakes.
+SRL-Agents is a LangGraph playground for building Self-Regulated Learning (SRL) agents. Each run walks through SRL's core loop—Forethought, Performance, and Self-Reflection—via specialized graph nodes (Forethought → Web Search → Actor → Reflector → Critic → Store). Use it to prototype metacognitive coaching strategies, remediation flows, or study companions that learn from prior mistakes.
 
 ## Prerequisites
 
@@ -47,5 +47,18 @@ app.invoke({"query": "我该如何制定复习计划？", "retry_count": 0})
 - Point `CHROMA_PERSIST_DIR` to a shared volume or swap `MemoryStore` with your own pgvector/ANN implementation via `create_app(memory_store=...)` if you need external persistence.
 - Expand `AgentState` with learner metadata (competencies, goals) to personalize prompts.
 - Capture evaluation data in `scenarios.py` to benchmark interventions.
+
+### External Web Search (MCP Tooling)
+
+- `srl_agents/tools/web_search.py` implements a DuckDuckGo-backed search tool that complies with Model Context Protocol expectations, making it easy to expose via LangGraph DevTools.
+- The graph automatically runs this tool after the Forethought phase and streams concise bullet summaries into the Actor prompt so the LLM can cite timely facts not found in its weights or the local memory store.
+- Network errors are treated as soft failures—the rest of the pipeline still executes and simply omits `web_results`.
+- You can swap in other providers by injecting a custom session factory when constructing `WebSearchTool` in `srl_agents/graph.py`.
+
+### ReAct-Style Reasoning
+
+- The Actor node now follows a ReAct-inspired template: it enumerates labeled reasoning thoughts referencing prior memories or fresh web hits before emitting a final learner answer.
+- Those reasoning traces are stored on the agent state (`actor_trace`) so the Reflector sees the whole chain of thought, yielding clearer metacognitive feedback loops.
+- If you build additional MCP tools, you can extend the ReAct protocol in `srl_agents/nodes/actor.py` to let the model request them on-demand.
 
 Refer to `AGENTS.md` for detailed contributor expectations, coding style, and PR steps.

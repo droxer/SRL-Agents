@@ -21,10 +21,19 @@ class CriticOutput(BaseModel):
     feedback: str = Field(description="If not approved, provide specific revision suggestions; if approved, leave empty")
 
 
+class ActorOutput(BaseModel):
+    thoughts: list[str] = Field(
+        description="Ordered chain-of-thought style reasoning steps explaining how the answer was derived"
+    )
+    answer: str = Field(description="Final response shared with the learner")
+
+
 class AgentState(TypedDict, total=False):
     query: str
     retrieved_memories: str
+    web_results: str
     response: str
+    actor_trace: list[str]
     proposed_reflection: ReflectionOutput
     review_decision: str
     critic_feedback: str

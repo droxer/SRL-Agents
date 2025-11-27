@@ -12,26 +12,26 @@ def build_reflector_node(llm: ChatOpenAI):
     def reflector_node(state: AgentState):
         query = state["query"]
         response = state["response"]
+        actor_trace = state.get("actor_trace", [])
+        retrieved_memories = state.get("retrieved_memories", "")
+        web_results = state.get("web_results", "")
         feedback = state.get("critic_feedback", "")
         retry_count = state.get("retry_count", 0)
 
         if feedback:
-            console.rule(f"[bold cyan]3. Reflector · Attempt {retry_count}")
+            console.rule(f"[bold cyan]4. Reflector · Attempt {retry_count}")
             system_msg = (
                 "Your previous summary was rejected. "
                 f"Feedback: {feedback}. Revise your rule summary accordingly."
             )
         else:
-            console.rule("[bold cyan]3. Reflector")
+            console.rule("[bold cyan]4. Reflector")
             system_msg = (
                 "You are a reflection assistant. Review the interaction and extract a brief, reusable technical rule."
             )
 
         prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", system_msg),
-                ("user", f"User question: {query}\nYour response: {response}"),
-            ]
+            _build_reflection_messages(system_msg, query, response, actor_trace, retrieved_memories, web_results)
         )
 
         structured_llm = llm.with_structured_output(ReflectionOutput)
@@ -41,3 +41,36 @@ def build_reflector_node(llm: ChatOpenAI):
         return {"proposed_reflection": reflection, "retry_count": retry_count + 1}
 
     return reflector_node
+
+
+def _build_reflection_messages(
+    system_msg: str,
+    query: str,
+    response: str,
+    actor_trace: list[str],
+    retrieved_memories: str = "",
+    web_results: str = "",
+):
+    """Build ReAct-style reflection messages showing Thought → Action → Observation cycle."""
+    sections = []
+    
+    # Show actions and observations (ReAct pattern)
+    if retrieved_memories and retrieved_memories.strip():
+        sections.append(f"Action: Retrieved memories\nObservation: {retrieved_memories}")
+    
+    if web_results and web_results.strip():
+        sections.append(f"Action: Web search\nObservation: {web_results}")
+    
+    # Show reasoning thoughts (ReAct pattern)
+    if actor_trace:
+        thought_lines = "\n".join(f"Thought {i+1}: {step}" for i, step in enumerate(actor_trace))
+        sections.append(f"Reasoning steps:\n{thought_lines}")
+    
+    trace_section = ""
+    if sections:
+        trace_section = "\n\n" + "\n\n".join(sections)
+    
+    return [
+        ("system", system_msg),
+        ("user", f"User question: {query}\nYour response: {response}{trace_section}"),
+    ]

@@ -39,7 +39,7 @@ def build_critic_node(llm: ChatOpenAI):
             )
         )
 
-        console.rule("[bold cyan]4. Critic")
+        console.rule("[bold cyan]5. Critic")
         console.print(f"[yellow]Decision:[/yellow] {result.decision}")
         if result.decision == "REVISE":
             console.print(f"[yellow]Feedback:[/yellow] {result.feedback}")
