@@ -41,6 +41,15 @@ app = create_app()
 app.invoke({"query": "我该如何制定复习计划？", "retry_count": 0})
 ```
 
+## Workflow Overview
+
+1. **Forethought** retrieves prior reflections from the Chroma-backed `MemoryStore`.
+2. **Web Search** (MCP tool) fans out to DuckDuckGo for fresh citations, summarizing them into bullet points.
+3. **Actor (ReAct)** reviews memories + web context, emits labeled reasoning thoughts, and concludes with a learner-facing answer. Both the answer and the reasoning trace are stored on `actor_trace`.
+4. **Reflector** replays the query, answer, and actor trace to distill a reusable rule; if the Critic sends feedback, it retries with that guidance.
+5. **Critic** validates the reflection (APPROVE/REVISE/DISCARD) before persistence.
+6. **Store** saves approved reflections back into memory for future Forethought runs.
+
 ## Extending SRL Behaviors
 
 - Add new node variants (diagnostics, reflection rubrics) in `srl_agents/nodes/`.
@@ -60,5 +69,11 @@ app.invoke({"query": "我该如何制定复习计划？", "retry_count": 0})
 - The Actor node now follows a ReAct-inspired template: it enumerates labeled reasoning thoughts referencing prior memories or fresh web hits before emitting a final learner answer.
 - Those reasoning traces are stored on the agent state (`actor_trace`) so the Reflector sees the whole chain of thought, yielding clearer metacognitive feedback loops.
 - If you build additional MCP tools, you can extend the ReAct protocol in `srl_agents/nodes/actor.py` to let the model request them on-demand.
+
+### Testing Notes
+
+- `tests/test_web_search.py` covers the DuckDuckGo MCP adapter to ensure formatting and empty-query handling stay stable.
+- `tests/test_reflector.py` protects the helper that injects Actor reasoning into reflection prompts—update it whenever the ReAct trace format changes.
+- Run `make test` (or `uv run pytest`) before committing prompt changes so snapshots of reasoning traces stay trustworthy.
 
 Refer to `AGENTS.md` for detailed contributor expectations, coding style, and PR steps.

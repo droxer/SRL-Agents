@@ -7,6 +7,15 @@ from langchain_openai import ChatOpenAI
 from ..logging import console
 from ..state import AgentState, ReflectionOutput
 
+_SYSTEM_MSG_INITIAL = (
+    "You are a reflection assistant. Review the interaction and extract a brief, reusable technical rule."
+)
+
+_SYSTEM_MSG_REVISION = (
+    "Your previous summary was rejected. "
+    "Feedback: {feedback}. Revise your rule summary accordingly."
+)
+
 
 def build_reflector_node(llm: ChatOpenAI):
     def reflector_node(state: AgentState):
@@ -20,15 +29,10 @@ def build_reflector_node(llm: ChatOpenAI):
 
         if feedback:
             console.rule(f"[bold cyan]4. Reflector · Attempt {retry_count}")
-            system_msg = (
-                "Your previous summary was rejected. "
-                f"Feedback: {feedback}. Revise your rule summary accordingly."
-            )
+            system_msg = _SYSTEM_MSG_REVISION.format(feedback=feedback)
         else:
             console.rule("[bold cyan]4. Reflector")
-            system_msg = (
-                "You are a reflection assistant. Review the interaction and extract a brief, reusable technical rule."
-            )
+            system_msg = _SYSTEM_MSG_INITIAL
 
         prompt = ChatPromptTemplate.from_messages(
             _build_reflection_messages(system_msg, query, response, actor_trace, retrieved_memories, web_results)
