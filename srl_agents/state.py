@@ -19,6 +19,15 @@ class ReflectionOutput(BaseModel):
 class CriticOutput(BaseModel):
     decision: str = Field(description="Decision result: APPROVE, REVISE, or DISCARD")
     feedback: str = Field(description="If not approved, provide specific revision suggestions; if approved, leave empty")
+    impact_score: int = Field(
+        description="Integer between 1 and 5 representing how strongly this reflection will improve learning outcomes"
+    )
+
+
+class LearningContext(BaseModel):
+    learning_goal: str = Field(description="Learner's intended capability or understanding target")
+    success_criteria: str = Field(description="Observable evidence that the goal has been met")
+    prior_knowledge: str = Field(description="Brief assessment of what the learner already knows or misconceptions")
 
 
 class ActorOutput(BaseModel):
@@ -30,7 +39,9 @@ class ActorOutput(BaseModel):
 
 class AgentState(TypedDict, total=False):
     query: str
+    learning_context: LearningContext
     retrieved_memories: str
+    needs_research: bool
     web_results: str
     response: str
     actor_trace: list[str]
@@ -38,3 +49,4 @@ class AgentState(TypedDict, total=False):
     review_decision: str
     critic_feedback: str
     retry_count: int
+    impact_score: int

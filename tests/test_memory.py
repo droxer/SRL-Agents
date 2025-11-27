@@ -132,6 +132,8 @@ def test_list_memories_returns_structured_rows():
             "insight": "Prefer pathlib over os.path",
             "reasoning": "Pathlib is cross-platform",
             "document": "Python. Prefer pathlib over os.path",
+            "impact_score": None,
+            "success_criteria": None,
         }
     ]
 
@@ -241,6 +243,30 @@ def test_add_memory_stores_reflection_correctly():
     assert memories[0]["topic"] == "Python"
     assert memories[0]["insight"] == "Use list comprehensions for simple transformations"
     assert memories[0]["reasoning"] == "More readable and often faster than loops"
+    assert memories[0]["impact_score"] is None
+    assert memories[0]["success_criteria"] is None
+
+
+def test_add_memory_captures_impact_and_success_criteria():
+    embedder = DummyEmbedder()
+    collection = FakeCollection()
+    store = MemoryStore(embedder=embedder, client=FakeClient(collection))
+    reflection = ReflectionOutput(
+        topic="Testing",
+        insight="Write assertions before refactors",
+        reasoning="Keeps regressions visible",
+        should_store=True,
+        source_query="How to avoid regressions?",
+    )
+
+    store.add(reflection, impact_score=4, success_criteria="Green tests demonstrate success")
+
+    metadata = collection.items[0]["metadata"]
+    assert metadata["impact_score"] == 4
+    assert metadata["success_criteria"] == "Green tests demonstrate success"
+    memories = store.list_memories()
+    assert memories[0]["impact_score"] == 4
+    assert memories[0]["success_criteria"] == "Green tests demonstrate success"
 
 
 def test_add_memory_with_empty_reasoning():

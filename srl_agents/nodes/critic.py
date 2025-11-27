@@ -15,7 +15,8 @@ _REVIEW_PROMPT = ChatPromptTemplate.from_messages(
             "Decision criteria:\n"
             "1. APPROVE: Rule is accurate, safe, and generalizable.\n"
             "2. REVISE: Rule is ambiguous, dangerous, or inaccurate. Provide revision suggestions.\n"
-            "3. DISCARD: Rule is nonsense or completely wrong.""",
+            "3. DISCARD: Rule is nonsense or completely wrong.\n"
+            "Also rate the expected learning impact from 1 (low) to 5 (transformational) relative to the learner's success criteria.""",
         ),
         (
             "user",
@@ -41,6 +42,7 @@ def build_critic_node(llm: ChatOpenAI):
 
         console.rule("[bold cyan]5. Critic")
         console.print(f"[yellow]Decision:[/yellow] {result.decision}")
+        console.print(f"[yellow]Impact score:[/yellow] {result.impact_score}")
         if result.decision == "REVISE":
             console.print(f"[yellow]Feedback:[/yellow] {result.feedback}")
 
@@ -49,6 +51,7 @@ def build_critic_node(llm: ChatOpenAI):
             update["critic_feedback"] = result.feedback
         else:
             update["critic_feedback"] = ""
+        update["impact_score"] = max(1, min(5, result.impact_score or 1))
         return update
 
     return critic_node

@@ -20,6 +20,8 @@ class MemoryRecord(TypedDict, total=False):
     insight: str
     reasoning: str | None
     document: str | None
+    impact_score: int | None
+    success_criteria: str | None
 
 
 class MemoryStore:
@@ -67,13 +69,14 @@ class MemoryStore:
             for meta, doc, dist in zip(meta_list or [], doc_list or [], dist_list or []):
                 topic = meta.get("topic", "General")
                 insight = meta.get("insight", doc)
+                impact = meta.get("impact_score")
                 score = self._distance_to_similarity(dist)
                 if self.min_similarity is not None and (
                     score is None or score < self.min_similarity
                 ):
-                    fallback_lines.append(self._format_memory_line(topic, insight, score))
+                    fallback_lines.append(self._format_memory_line(topic, insight, score, impact))
                     continue
-                lines.append(self._format_memory_line(topic, insight, score))
+                lines.append(self._format_memory_line(topic, insight, score, impact))
 
         if lines:
             return "\n".join(lines)
@@ -82,7 +85,13 @@ class MemoryStore:
             return "\n".join(fallback_lines[: self.top_k])
         return "No relevant past experience."
 
-    def add(self, reflection: ReflectionOutput) -> None:
+    def add(
+        self,
+        reflection: ReflectionOutput,
+        *,
+        impact_score: int | None = None,
+        success_criteria: str | None = None,
+    ) -> None:
         """Persist reflections as embedded documents."""
         if not self.embedder:
             console.print("[red]Cannot store reflection: embedding client not configured.[/red]")
@@ -104,18 +113,22 @@ class MemoryStore:
         console.print(
             f"[green]\n[Database] 💾 Persisting: [{reflection.topic}] {reflection.insight}[/green]"
         )
+        metadata = {
+            "topic": reflection.topic,
+            "insight": reflection.insight,
+            "reasoning": reflection.reasoning,
+            "source_query": reflection.source_query,
+        }
+        if impact_score is not None:
+            metadata["impact_score"] = impact_score
+        if success_criteria:
+            metadata["success_criteria"] = success_criteria
+
         self.collection.add(
             ids=[str(uuid4())],
             embeddings=[embedding],
             documents=[text],
-            metadatas=[
-                {
-                    "topic": reflection.topic,
-                    "insight": reflection.insight,
-                    "reasoning": reflection.reasoning,
-                    "source_query": reflection.source_query,
-                }
-            ],
+            metadatas=[metadata],
         )
 
     def list_memories(self, limit: int = 50) -> List[MemoryRecord]:
@@ -140,6 +153,8 @@ class MemoryStore:
                     insight=meta.get("insight", doc),
                     reasoning=meta.get("reasoning"),
                     document=doc,
+                    impact_score=meta.get("impact_score"),
+                    success_criteria=meta.get("success_criteria"),
                 )
             )
         return records
@@ -198,6 +213,9 @@ class MemoryStore:
         return None
 
     @staticmethod
-    def _format_memory_line(topic: str, insight: str, score: float | None) -> str:
+    def _format_memory_line(
+        topic: str, insight: str, score: float | None, impact_score: int | None
+    ) -> str:
         score_txt = f" (score: {score:.2f})" if score is not None else ""
-        return f"- [{topic}] {insight}{score_txt}"
+        impact_txt = f" | impact: {impact_score}" if impact_score else ""
+        return f"- [{topic}] {insight}{score_txt}{impact_txt}"

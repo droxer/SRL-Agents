@@ -25,6 +25,8 @@ def list_memories(store: MemoryStore, limit: int) -> None:
     table.add_column("Topic", style="magenta")
     table.add_column("Insight", overflow="fold")
     table.add_column("Reasoning", overflow="fold")
+    table.add_column("Impact", style="cyan")
+    table.add_column("Success Criteria", overflow="fold")
     table.add_column("Document", overflow="fold")
 
     for record in records:
@@ -33,6 +35,8 @@ def list_memories(store: MemoryStore, limit: int) -> None:
             record.get("topic", "General") or "General",
             record.get("insight", "") or "",
             record.get("reasoning", "") or "",
+            str(record.get("impact_score", "") or ""),
+            record.get("success_criteria", "") or "",
             record.get("document", "") or "",
         )
     console.print(table)
